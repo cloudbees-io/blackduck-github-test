@@ -1,0 +1,109 @@
+name: blackduck-github-hybrid
+description: Run blackduck compliance scan with CloudBees hybrid integration
+
+inputs:
+  blackduck_server_url:
+    description: The URL of the Black Duck server
+    required: true
+  blackduck_api_token:
+    description: The API token for Black Duck
+    required: true
+  cloudbees_pat_token:
+    description: The CloudBees Personal Access Token
+    required: true
+  project_name:
+    description: The name of the project to scan
+    required: false
+    default: ''
+  project_version:
+    description: The version of the project to scan
+    required: false
+    default: ''
+  detect_cli_params:
+    description: Additional parameters for the Detect CLI
+    required: false
+    default: ''
+  ref:
+    description: 'Flag to indicate the ref that should be archived (same as supplied to checkout)'
+    required: false
+    default: ''
+  workspace-dir:
+    description: 'Flag to mention the path where the checked out code will be present'
+    required: false
+    default: ''
+  scan-mode:
+    description: 'Flag to mention the scan mode'
+    required: false
+    default: 'INTELLIGENT'
+  step_id:
+    description: 'The ID of the step in the workflow'
+    required: false
+    default: ''
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: Generate reference files 
+      shell: bash
+      run: |
+        docker run --rm \
+          -v $GITHUB_WORKSPACE:$GITHUB_WORKSPACE \
+          -e INPUT_CLOUDBEES_API_TOKEN="${{ inputs.cloudbees_pat_token }}" \
+          -e INPUT_CLOUDBEES_API_URL="${{ vars.cloudbees_api_url }}" \
+          -e INPUT_RUN_ID="$GITHUB_RUN_ID" \
+          -e INPUT_IS_GITHUB_WORKFLOW="true" \
+          -e GITHUB_RUN_ID="$GITHUB_RUN_ID" \
+          -e GITHUB_WORKFLOW_REF="$GITHUB_WORKFLOW_REF" \
+          -e GITHUB_RUN_ATTEMPT="${{ github.run_attempt }}" \
+          -e GITHUB_RUN_NUMBER="${{ github.run_number }}" \
+          -e GITHUB_REF_NAME="${{ github.ref_name }}" \
+          -e GITHUB_REPOSITORY="${{ github.repository }}" \
+          -e GITHUB_SERVER_URL="${{ github.server_url }}/${{ github.repository }}" \
+          -e GITHUB_JOB="${{ github.job }}" \
+          -e GITHUB_PROVIDER="GITHUB" \
+          -e GITHUB_WORKSPACE="$GITHUB_WORKSPACE" \
+          -e GITHUB_ENV="$GITHUB_ENV" \
+          public.ecr.aws/l7o7z1g8/actions/assets-plugin-chain-utils:319c16869790d0d394ac6905d283209512b422b0 \
+          generate-references --asset-type "CODE"
+
+    - name: Run blackduck compliance plugin
+      shell: bash
+      run: |
+        docker run --rm \
+          -v $GITHUB_WORKSPACE:$GITHUB_WORKSPACE \
+          -e GITHUB_WORKSPACE="$GITHUB_WORKSPACE" \
+          -e RUN_ID="$GITHUB_RUN_ID" \
+          -e JOB_ID="$GITHUB_JOB" \
+          -e STEP_ID="${{ inputs.step_id }}" \
+          -e BLACKDUCK_URL: ${{ inputs.blackduck_server_url }}
+          -e BLACKDUCK_API_TOKEN: ${{ inputs.blackduck_api_token }}
+          -e BLACKDUCK_PROJECT: ${{ inputs.project-name }}
+          -e BLACKDUCK_PROJECT_VERSION: ${{ inputs.project-version }}
+          -e BLACKDUCK_SCAN_MODE: ${{ inputs.scan-mode }}
+          -e BLACKDUCK_DETECT_CLI_PARAMS: ${{ inputs.detect-cli-params }}
+          public.ecr.aws/l7o7z1g8/actions/plugin-blackduck-sca:f2f7d6da8bb468109b402aa7205ffd0cb438828b \
+          --mode single
+
+    - name: Complete execution plan
+      shell: bash
+      run: |
+        docker run --rm \
+          -v $GITHUB_WORKSPACE:$GITHUB_WORKSPACE \
+          -e INPUT_CLOUDBEES_API_TOKEN="${{ inputs.cloudbees_pat_token }}" \
+          -e INPUT_CLOUDBEES_API_URL="${{ vars.cloudbees_api_url }}" \
+          -e INPUT_RUN_ID="$GITHUB_RUN_ID" \
+          -e INPUT_IS_GITHUB_WORKFLOW="true" \
+          -e GITHUB_RUN_ID="$GITHUB_RUN_ID" \
+          -e GITHUB_WORKFLOW_REF="$GITHUB_WORKFLOW_REF" \
+          -e GITHUB_RUN_ATTEMPT="${{ github.run_attempt }}" \
+          -e GITHUB_RUN_NUMBER="${{ github.run_number }}" \
+          -e GITHUB_REF_NAME="${{ github.ref_name }}" \
+          -e GITHUB_REPOSITORY="${{ github.repository }}" \
+          -e GITHUB_SERVER_URL="${{ github.server_url }}/${{ github.repository }}" \
+          -e GITHUB_JOB="${{ github.job }}" \
+          -e GITHUB_PROVIDER="GITHUB" \
+          -e GITHUB_WORKSPACE="$GITHUB_WORKSPACE" \
+          -e GITHUB_ENV="$GITHUB_ENV" \
+          public.ecr.aws/l7o7z1g8/actions/assets-plugin-chain-utils:319c16869790d0d394ac6905d283209512b422b0 \
+          process-outputs
