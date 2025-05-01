@@ -97,7 +97,7 @@ runs:
           -e BLACKDUCK_PROJECT_VERSION="${{ inputs.project-version }}" \
           -e BLACKDUCK_SCAN_MODE="${{ inputs.scan-mode }}" \
           -e BLACKDUCK_DETECT_CLI_PARAMS="${{ inputs.detect-cli-params }}" \
-          public.ecr.aws/l7o7z1g8/actions/plugin-blackduck-sca:0d8129d1961441a2eacb199dcc057b06b2ae5037 \
+          public.ecr.aws/l7o7z1g8/actions/plugin-blackduck-sca:84b00932be153dd4ce77a776bccd764512d256f6 \
           --mode single
 
     - name: Complete execution plan
