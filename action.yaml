@@ -90,6 +90,7 @@ runs:
       shell: bash
       run: |
         docker run --rm \
+          -u root \
           -v $GITHUB_WORKSPACE:$GITHUB_WORKSPACE \
           -e GITHUB_WORKSPACE="$GITHUB_WORKSPACE" \
           -e RUN_ID="$GITHUB_RUN_ID" \
