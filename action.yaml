@@ -96,7 +96,7 @@ runs:
           -e RUN_ID="$GITHUB_RUN_ID" \
           -e JOB_ID="$GITHUB_JOB" \
           -e STEP_ID="${{ inputs.step-id }}" \
-          -e BLACKDUCK_URL=${{ inputs.server-url }} \
+          -e BLACKDUCK_URL="${{ inputs.server-url }}" \
           -e BLACKDUCK_API_TOKEN=${{ inputs.api-token }} \
           -e BLACKDUCK_PROJECT="${{ inputs.project-name }}" \
           -e BLACKDUCK_PROJECT_VERSION="${{ inputs.project-version }}" \
