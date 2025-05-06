@@ -8,10 +8,10 @@ inputs:
   blackduck_api_token:
     description: The API token for Black Duck
     required: true
-  cloudbees_pat_token:
+  cloudbees-pat:
     description: The CloudBees Personal Access Token
     required: true
-  cloudbees_api_url: 
+  cloudbees-url: 
     description: Cloudbees API URL
     required: false
     default: "https://api.cloudbees.io"
@@ -68,8 +68,8 @@ runs:
       run: |
         docker run --rm \
           -v $GITHUB_WORKSPACE:$GITHUB_WORKSPACE \
-          -e INPUT_CLOUDBEES_API_TOKEN="${{ inputs.cloudbees_pat_token }}" \
-          -e INPUT_CLOUDBEES_API_URL="${{ inputs.cloudbees_api_url }}" \
+          -e INPUT_CLOUDBEES_API_TOKEN="${{ inputs.cloudbees-pat }}" \
+          -e INPUT_CLOUDBEES_API_URL="${{ inputs.cloudbees-url }}" \
           -e INPUT_RUN_ID="$GITHUB_RUN_ID" \
           -e INPUT_IS_GITHUB_WORKFLOW="true" \
           -e GITHUB_RUN_ID="$GITHUB_RUN_ID" \
@@ -110,8 +110,8 @@ runs:
       run: |
         docker run --rm \
           -v $GITHUB_WORKSPACE:$GITHUB_WORKSPACE \
-          -e INPUT_CLOUDBEES_API_TOKEN="${{ inputs.cloudbees_pat_token }}" \
-          -e INPUT_CLOUDBEES_API_URL="${{ inputs.cloudbees_api_url }}" \
+          -e INPUT_CLOUDBEES_API_TOKEN="${{ inputs.cloudbees-pat }}" \
+          -e INPUT_CLOUDBEES_API_URL="${{ inputs.cloudbees-url }}" \
           -e INPUT_RUN_ID="$GITHUB_RUN_ID" \
           -e INPUT_IS_GITHUB_WORKFLOW="true" \
           -e GITHUB_RUN_ID="$GITHUB_RUN_ID" \
