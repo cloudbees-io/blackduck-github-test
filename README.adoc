@@ -62,9 +62,9 @@ In your YAML file, add:
       - name: Scan with Blackduck
         uses: https://github.com/cloudbees-io/blackduck-github-test@v1
         with:
-          cloudbees_pat_token : secrets.PAT 
-          blackduck-server-url: Blackduck server url 
-          blackduck-api-token: secrets.BD_TOKEN
+          cloudbees-pat : secrets.PAT 
+          server-url: Blackduck server url 
+          api-token: secrets.BD_TOKEN
 
 ----
 
