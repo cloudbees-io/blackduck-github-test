@@ -15,15 +15,15 @@ inputs:
     description: Cloudbees API URL
     required: false
     default: "https://api.cloudbees.io"
-  project_name:
+  project-name:
     description: The name of the project to scan
     required: false
     default: ''
-  project_version:
+  project-version:
     description: The version of the project to scan
     required: false
     default: ''
-  detect_cli_params:
+  detect-cli-params:
     description: Additional parameters for the Detect CLI
     required: false
     default: ''
@@ -39,7 +39,7 @@ inputs:
     description: 'Flag to mention the scan mode'
     required: false
     default: 'INTELLIGENT'
-  step_id:
+  step-id:
     description: 'The ID of the step in the workflow'
     required: false
     default: ''
@@ -95,7 +95,7 @@ runs:
           -e GITHUB_WORKSPACE="$GITHUB_WORKSPACE" \
           -e RUN_ID="$GITHUB_RUN_ID" \
           -e JOB_ID="$GITHUB_JOB" \
-          -e STEP_ID="${{ inputs.step_id }}" \
+          -e STEP_ID="${{ inputs.step-id }}" \
           -e BLACKDUCK_URL=${{ inputs.server-url }} \
           -e BLACKDUCK_API_TOKEN=${{ inputs.api-token }} \
           -e BLACKDUCK_PROJECT="${{ inputs.project-name }}" \
