@@ -132,15 +132,6 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v3
 
-      - name: Print GitHub run ID
-        shell: bash
-        run: |
-          echo "Run ID is $GITHUB_RUN_ID"
-          echo "Source is ${{ github.server_url }}/${{ github.repository }}"
-          echo "Subject is $GITHUB_WORKFLOW_REF|${{ github.run_id }}|${{ github.run_attempt }}|${{ github.run_number }}"
-          echo "Job is $GITHUB_JOB"
-          curl checkip.amazonaws.com
-
       - name: Black Duck scan
         uses: cloudbees-io-gha/blackduck-scan-publish@v1
         with:
