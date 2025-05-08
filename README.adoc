@@ -1,6 +1,32 @@
-= GHA CloudBees action: Scan with Blackduck
+= Black Duck scan and publish to Platform
 
-Use this action to perform static application security testing (SAST) on a repository with the Blackduck scanner.
+Use this action to scan repositories for dependency vulnerabilities with the Black Duck Software Composition Analysis (SCA) scanner, and then view comprehensive security results in the CloudBees platform.
+
+== Prerequisites
+
+Set up the CloudBees platform and GHA to work together, providing key features of the platform to GHA workflows. Refer to link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/github-actions/gha-getting-started[Getting started with GHA integration] for more information.
+
+== Scanner information
+
+The Black Duck SCA scanner architectural components are:
+
+* Client-side: The Black Duck Detect scanning tool, the Signature Scanner command line tool, and the REST API.
+* Server-side: The Black Duck server.
+* Data center: The link:https://www.blackduck.com/software-composition-analysis-tools/knowledgebase.html[Black Duck KnowledgeBase] open-source software database.
+
+The scanning process is as follows:
+
+. The Black Duck Detect tool is used to authenticate and initiate the code scan.
+. Codebases are scanned on the client side.
+. The scan data is uploaded to the Black Duck server with the Detect tool.
+The completed scan data does not contain any source code, to maintain your code security.
+The completed scan contains only file and directory signatures, and information derived from package management files.
+. The scan data is sent to the Black Duck KnowledgeBase, and open source components in your code are matched and identified.
+The matching/identification process is based on your package manager data and SHA1 hashes created by the Signature Scanner when it scans your files and directories.
+. The REST API is used to fetch the bearer token and retrieve the scanning results.
+. The matched open source components are reported as a viewable Bill of Materials that contains the associated security, licensing, and operational risks of the discovered components.
+
+NOTE: For more information about the Black Duck SCA scanner, refer to the link:https://documentation.blackduck.com/bundle/bd-hub/page/Welcome.html[product documentation].
 
 == Inputs
 
@@ -13,26 +39,30 @@ Use this action to perform static application security testing (SAST) on a repos
 | Required?
 | Description
 
-
 | `cloudbees-pat`
 | String
 | Yes
-| Specify the PAT token obtained from Cloudbees.
+| The https://docs.cloudbees.com/docs/cloudbees-platform/latest/workflows/personal-access-token[CloudBees platform personal access token].
 
-| `cloudbees-url`
+| `api-token`
 | String
-| No
-| The CloudBees platform URL. The default value is `https://api.cloudbees.io`.
+| Yes
+| The Black Duck client secret.
 
 | `server-url`
 | String
 | Yes
 | The Black Duck server URL.
 
-| `api-token`
+| `cloudbees-url`
 | String
-| Yes
-| The Black Duck client secret.
+| No
+| The CloudBees platform URL. The default value is `https://api.cloudbees.io`.
+
+| `detect-cli-params`
+| String
+| No
+| Specify any link:https://documentation.blackduck.com/bundle/detect/page/properties/basic-properties.html[Black Duck Detect properties].
 
 | `project-name`
 | String
@@ -44,29 +74,75 @@ Use this action to perform static application security testing (SAST) on a repos
 | No
 | The Black Duck project version.
 
-| `detect-cli-params`
-| String
-| No
-| Specify any link:https://documentation.blackduck.com/bundle/detect/page/properties/basic-properties.html[Black Duck Detect properties].
-
-
 |===
 
-== Usage example
+== Usage examples
 
-In your YAML file, add:
+The following is a basic example of using this action:
 
 [source,yaml]
 ----
 
-      - name: Scan with Blackduck
-        uses: https://github.com/cloudbees-io/blackduck-github-test@v1
+      - name: Scan with Black Duck SCA
+        uses: cloudbees-io-gha/blackduck-scan-publish@v1
         with:
-          cloudbees-pat : secrets.PAT 
-          server-url: Blackduck server url 
-          api-token: secrets.BD_TOKEN
+          api-token: ${{ secrets.BLACK_DUCK_TOKEN }}
+          server-url: ${{ vars.BLACK_DUCK_URL }}
+          cloudbees-pat: ${{ secrets.CloudBees-platform-PAT }}
 
 ----
+
+In the following example, the link:https://documentation.blackduck.com/bundle/detect/page/properties/basic-properties.html[Black Duck Detect properties]
+`logging.level.detect` and `blackduck.offline.mode` are specified:
+
+[source,yaml]
+----
+
+      - name: Scan with Black Duck SCA with params
+        uses: cloudbees-io-gha/blackduck-scan-publish@v1
+        with:
+          cloudbees-pat: ${{ secrets.CloudBees-platform-PAT }}
+          api-token: ${{ secrets.BLACK_DUCK_TOKEN }}
+          server-url: ${{ vars.BLACK_DUCK_URL }}
+          detect-cli-params: '--logging.level.detect=DEBUG --blackduck.offline.mode=false'
+
+----
+
+=== Full workflow and run example
+
+The following GHA workflow example scans a repository with Black Duck.
+
+.Example GHA workflow YAML file
+[.collapsible]
+--
+
+[source, yaml,role="default-expanded"]
+----
+name: Black Duck scan workflow
+
+on:
+  push:
+    branches:
+    - main
+
+jobs:
+  blackduck-codescan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Black Duck scan
+        uses: cloudbees-io-gha/blackduck-scan-publish@v1
+        with:
+          cloudbees-pat: ${{ secrets.CLOUDBEES_PAT }}
+          api-token: ${{ secrets.BLACKDUCK_API_TOKEN }}
+          server-url: ${{ vars.BLACKDUCK_SERVER_URL }}
+
+----
+--
+
+After the GHA run has completed, the security findings are collected and displayed in the CloudBees platform https://docs.cloudbees.com/docs/cloudbees-platform/latest/aspm/security-center[Security center] of the component containing the workflow.
 
 == License
 
@@ -75,5 +151,5 @@ link:https://opensource.org/license/mit/[MIT license].
 
 == References
 
-* Learn more about link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/actions[using actions in CloudBees workflows].
+* Learn more about link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/github-actions/intro[Using GitHub Actions with the CloudBees platform].
 * Learn about link:https://docs.cloudbees.com/docs/cloudbees-platform/latest/[the CloudBees platform].
